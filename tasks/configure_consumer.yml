@@ -1,9 +1,8 @@
 ---
 - name: Create Consumer Replica Entry
   community.general.ldap_entry:
-    server_uri: "{{ dirsrv_server_uri }}"
+    server_uri: "{{ dirsrv_server_secure_uri }}"
     validate_certs: "{{ dirsrv_tls_certificate_trusted }}"
-    start_tls: "{{ dirsrv_use_starttls }}"
     bind_dn: "{{ dirsrv_rootdn }}"
     bind_pw: "{{ dirsrv_rootdn_password }}"
     dn: "cn=replica,cn=\"{{ dirsrv_suffix }}\",cn=mapping tree,cn=config"
@@ -21,9 +20,8 @@
 
 - name: Configure Consumer Replica Entry
   community.general.ldap_attrs:
-    server_uri: "{{ dirsrv_server_uri }}"
+    server_uri: "{{ dirsrv_server_secure_uri }}"
     validate_certs: "{{ dirsrv_tls_certificate_trusted }}"
-    start_tls: "{{ dirsrv_use_starttls }}"
     bind_dn: "{{ dirsrv_rootdn }}"
     bind_pw: "{{ dirsrv_rootdn_password }}"
     dn: "cn=replica,cn=\"{{ dirsrv_suffix }}\",cn=mapping tree,cn=config"
@@ -35,9 +33,8 @@
 
 - name: Configure referral
   community.general.ldap_attrs:
-    server_uri: "{{ dirsrv_server_uri }}"
+    server_uri: "{{ dirsrv_server_secure_uri }}"
     validate_certs: "{{ dirsrv_tls_certificate_trusted }}"
-    start_tls: "{{ dirsrv_use_starttls }}"
     bind_dn: "{{ dirsrv_rootdn }}"
     bind_pw: "{{ dirsrv_rootdn_password }}"
     dn: "cn=\"{{ dirsrv_suffix }}\",cn=mapping tree,cn=config"
