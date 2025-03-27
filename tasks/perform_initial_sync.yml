@@ -20,7 +20,7 @@
     ldapmodify 
     -x 
     {{ '-ZZ' if dirsrv_use_starttls else '' }}
-    -H {{ dirsrv_server_uri | regex_replace(ansible_hostname, dirsrv_initial_sync_source) }} 
+    -H {{ dirsrv_server_uri | regex_replace(ansible_facts['fqdn'], dirsrv_initial_sync_source) }} 
     -D "{{ dirsrv_rootdn }}" 
     -w "{{ dirsrv_rootdn_password }}" 
     -f /tmp/dirsrv_initial_sync.ldif
@@ -41,7 +41,7 @@
     ldapsearch 
     -x
     {{ '-ZZ' if dirsrv_use_starttls else '' }}
-    -H {{ dirsrv_server_uri | regex_replace(ansible_hostname, dirsrv_initial_sync_source) }} 
+    -H {{ dirsrv_server_uri | regex_replace(ansible_facts['fqdn'], dirsrv_initial_sync_source) }} 
     -D "{{ dirsrv_rootdn }}" 
     -w "{{ dirsrv_rootdn_password }}" 
     -b "cn=agreement_with_{{ ansible_facts['fqdn'] | replace('.', '_') }},cn=replica,cn=\"{{ dirsrv_suffix }}\",cn=mapping tree,cn=config" 
