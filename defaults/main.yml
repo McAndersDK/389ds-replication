@@ -34,3 +34,9 @@ dirsrv_replication_user: Replication Manager
 # dirsrv_replication_user_password: even-more-secret
 dirsrv_begin_replication_immediately: true
 # dirsrv_consumer_referral_to_supplier: "ldap://supplier.example.com:389/"
+
+# For controlling initial synchronization
+dirsrv_initial_sync_source: ""  # FQDN of the server to initially sync from (if empty, no initial sync)
+dirsrv_wait_for_initial_sync: true  # Whether to wait for initial sync to complete
+dirsrv_initial_sync_timeout: 600  # Timeout in seconds to wait for initial sync
+dirsrv_enable_outbound_replication_after_sync: true  # Enable outbound replication after sync completes

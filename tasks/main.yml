@@ -37,3 +37,11 @@
 - name: Supplier or master/both
   ansible.builtin.include_tasks: configure_replication_agreement.yml
   when: dirsrv_instance_is_supplier
+
+- name: Perform initial sync if source server is specified
+  ansible.builtin.include_tasks: perform_initial_sync.yml
+  when: dirsrv_instance_is_supplier and dirsrv_initial_sync_source | length > 0
+
+- name: Enable outbound replication after initial sync
+  ansible.builtin.include_tasks: enable_outbound_replication.yml
+  when: dirsrv_instance_is_supplier and dirsrv_initial_sync_source | length > 0 and dirsrv_enable_outbound_replication_after_sync

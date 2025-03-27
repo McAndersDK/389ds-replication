@@ -4,6 +4,15 @@
 # When setting up replication agreements, first set them up between all suppliers, then between the
 # suppliers and the hubs, and last between the hub and the consumers.
 
+- name: Determine if outbound replication should be enabled initially
+  ansible.builtin.set_fact:
+    dirsrv_outbound_replication_enabled: "{{ 
+      'on' if 
+      (dirsrv_begin_replication_immediately and not dirsrv_initial_sync_source) or 
+      (not dirsrv_initial_sync_source) 
+      else 'off'
+      }}"
+
 - name: Set agreement name
   ansible.builtin.set_fact:
     dirsrv_agreement_cn: "agreement_with_{{ dirsrv_consumer_uri | urlsplit('hostname') | replace('.', '_') }}"
@@ -34,7 +43,7 @@
       description: "Agreement between this server (supplier) and {{ dirsrv_consumer_uri }} (consumer). Managed by Ansible."
       nsds5replicatedattributelist: "{{ dirsrv_replica_attributes_list }}"
       nsds5ReplicatedAttributeListTotal: "{{ dirsrv_replica_attributes_list_total }}"
-      nsds5ReplicaEnabled: "{{ 'on' if dirsrv_begin_replication_immediately else 'off' }}"
+      nsds5ReplicaEnabled: "{{ dirsrv_outbound_replication_enabled }}"
     state: present
 
 - name: Configure replication agreement on supplier

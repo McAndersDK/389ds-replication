@@ -39,7 +39,10 @@ If Ansible does not support the `ldap_attrs` module you're using an old version 
 | dirsrv_replication_user_password        |                                                                                | Password for that account.                                                                                                                                                                                                                                                                                                                                                                                               | Yes            | CB   |
 | dirsrv_begin_replication_immediately    | true                                                                           | Boolean, sets `nsds5ReplicaEnabled` to "on" or "off" in the replication agreement. This should be a safe: if you add a new server it won't start pushing its empty database to other servers in any case because they have a different generation ID and replication fails (see examples for more details), but if you want to be even safer or make some customizations to the replication agreement, set this to false | **No**         | CB   |
 | dirsrv_consumer_referral_to_supplier    | "ldap://supplier.example.com:389/"                                             | Full LDAP URI including port. When a client tries to write to a consumer, which is read-only, it will redirect the client to this server (a supplier that can accept writes).                                                                                                                                                                                                                                            | Yes            | C    |
-
+| dirsrv_initial_sync_source              | ""      | FQDN of the server to initially sync from. If specified, this server will initiate a replica refresh to push data to the new server before enabling bidirectional replication. Leave empty to skip initial sync.                                                                                                                                                                                                           | Yes            | SB    |
+| dirsrv_wait_for_initial_sync            | true    | Whether to wait for the initial sync to complete before proceeding. Set to false for very large databases where you want to continue with the playbook and handle sync completion separately.                                                                                                                                                                                                                              | Yes            | SB    |
+| dirsrv_initial_sync_timeout             | 600     | Timeout in seconds to wait for initial sync to complete before giving up.                                                                                                                                                                                                                                                                                                                                                | Yes            | SB    |
+| dirsrv_enable_outbound_replication_after_sync | true | After initial sync completes, automatically enable outbound replication from this server back to the source. This ensures bidirectional replication only begins after the new server has received a complete copy of the data.                                                                                                                                                                                            | Yes            | SB    |
 First of all choose if the server is a supplier, consumer or both and set
 dirsv_role accordingly. Then set the variables related to that: look in the Role
 column, C = Consumer, S = Supplier, B = Both.
@@ -164,6 +167,39 @@ to the consumer:
       dirsrv_replication_user_password_remote: "aaaaaa" # On the other server
       dirsrv_consumer_uri: "ldap://mm1.example.local:389/" # The other server
       dirsrv_supplier_replica_id: 2
+```
+
+## Initial Synchronization in Multi-Master Setup
+
+When adding a new server to an existing multi-master replication setup, it's important to ensure the new server receives a complete copy of the data before it starts replicating back to existing servers. This prevents the new server from potentially replicating an empty directory back to existing servers.
+
+To safely add a new server:
+
+1. Set `dirsrv_initial_sync_source` to the FQDN of an existing server containing the data
+2. The role will:
+   - Configure the new server with replication agreements but initially disable outbound replication
+   - Trigger a replica refresh from the source server to the new server
+   - Wait for the initial sync to complete (controlled by `dirsrv_wait_for_initial_sync` and `dirsrv_initial_sync_timeout`)
+   - Enable outbound replication from the new server back to the source (if `dirsrv_enable_outbound_replication_after_sync` is true)
+
+Example for adding a new server to an existing multi-master setup:
+
+```yaml
+- hosts: new_ldap_server
+  become: true
+  roles:
+    -
+      role: lvps.389ds_replication
+      dirsrv_replica_role: 'both'
+      dirsrv_suffix: "dc=example,dc=local"
+      dirsrv_server_uri: "ldap://localhost"
+      dirsrv_rootdn_password: secret
+      dirsrv_replication_user_password: "password1"
+      dirsrv_replication_user_password_remote: "password2"
+      dirsrv_consumer_uri: "ldap://existing_server.example.local:389/"
+      dirsrv_supplier_replica_id: 3
+      # Enable safe initial sync
+      dirsrv_initial_sync_source: "existing_server.example.local"
 ```
 
 ## Known bugs

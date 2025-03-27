@@ -1,0 +1,29 @@
+---
+- name: Create temporary LDIF file for enabling outbound replication
+  ansible.builtin.copy:
+    dest: "/tmp/dirsrv_enable_replication.ldif"
+    content: |
+      dn: cn={{ dirsrv_agreement_cn }},cn=replica,cn=\"{{ dirsrv_suffix }}\",cn=mapping tree,cn=config
+      changetype: modify
+      replace: nsds5ReplicaEnabled
+      nsds5ReplicaEnabled: on
+    mode: '0600'
+  when: dirsrv_perform_initial_sync and dirsrv_enable_outbound_replication_after_sync
+
+- name: Enable outbound replication after sync
+  ansible.builtin.shell: >
+    ldapmodify 
+    -x 
+    -H {{ dirsrv_server_uri }} 
+    -D "{{ dirsrv_rootdn }}" 
+    -w "{{ dirsrv_rootdn_password }}" 
+    -f /tmp/dirsrv_enable_replication.ldif
+  register: enable_result
+  failed_when: enable_result.rc != 0
+  when: dirsrv_perform_initial_sync and dirsrv_enable_outbound_replication_after_sync
+
+- name: Remove temporary LDIF file for enabling replication
+  ansible.builtin.file:
+    path: "/tmp/dirsrv_enable_replication.ldif"
+    state: absent
+  when: dirsrv_perform_initial_sync and dirsrv_enable_outbound_replication_after_sync

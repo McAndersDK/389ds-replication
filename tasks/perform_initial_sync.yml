@@ -1,0 +1,52 @@
+---
+- name: Check if initial sync is required
+  ansible.builtin.set_fact:
+    dirsrv_perform_initial_sync: "{{ dirsrv_initial_sync_source | length > 0 }}"
+
+- name: Create temporary LDIF file for initiating sync
+  ansible.builtin.copy:
+    dest: "/tmp/dirsrv_initial_sync.ldif"
+    content: |
+      dn: cn=agreement_with_{{ ansible_facts['fqdn'] | replace('.', '_') }},cn=replica,cn=\"{{ dirsrv_suffix }}\",cn=mapping tree,cn=config
+      changetype: modify
+      add: nsds5BeginReplicaRefresh
+      nsds5BeginReplicaRefresh: start
+    mode: '0600'
+  delegate_to: "{{ dirsrv_initial_sync_source }}"
+  when: dirsrv_perform_initial_sync
+
+- name: Trigger initial sync from source server
+  ansible.builtin.shell: >
+    ldapmodify 
+    -x 
+    -H {{ dirsrv_server_uri | regex_replace('localhost', dirsrv_initial_sync_source) }} 
+    -D "{{ dirsrv_rootdn }}" 
+    -w "{{ dirsrv_rootdn_password }}" 
+    -f /tmp/dirsrv_initial_sync.ldif
+  delegate_to: "{{ dirsrv_initial_sync_source }}"
+  register: sync_result
+  failed_when: sync_result.rc != 0 and "Replica is being initialized" not in sync_result.stderr
+  when: dirsrv_perform_initial_sync
+  
+- name: Remove temporary LDIF file
+  ansible.builtin.file:
+    path: "/tmp/dirsrv_initial_sync.ldif"
+    state: absent
+  delegate_to: "{{ dirsrv_initial_sync_source }}"
+  when: dirsrv_perform_initial_sync
+
+- name: Wait for initial sync to complete
+  ansible.builtin.shell: >
+    ldapsearch 
+    -x 
+    -H {{ dirsrv_server_uri | regex_replace('localhost', dirsrv_initial_sync_source) }} 
+    -D "{{ dirsrv_rootdn }}" 
+    -w "{{ dirsrv_rootdn_password }}" 
+    -b "cn=agreement_with_{{ ansible_facts['fqdn'] | replace('.', '_') }},cn=replica,cn=\"{{ dirsrv_suffix }}\",cn=mapping tree,cn=config" 
+    nsds5replicaUpdateInProgress | grep "nsds5replicaUpdateInProgress:" | awk '{print $2}'
+  register: sync_status
+  until: sync_status.stdout.strip() == "0"
+  retries: "{{ (dirsrv_initial_sync_timeout / 10) | int }}"
+  delay: 10
+  delegate_to: "{{ dirsrv_initial_sync_source }}"
+  when: dirsrv_perform_initial_sync and dirsrv_wait_for_initial_sync
