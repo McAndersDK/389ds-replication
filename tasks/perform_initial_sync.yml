@@ -7,7 +7,7 @@
   ansible.builtin.copy:
     dest: "/tmp/dirsrv_initial_sync.ldif"
     content: |
-      dn: {{ dirsrv_agreement_cn }}
+      dn: cn=agreement_with_{{ ansible_facts['fqdn'] | urlsplit('hostname') | replace('.', '_') }},cn=replica,cn=\"{{ dirsrv_suffix }}\",cn=mapping tree,cn=config
       changetype: modify
       add: nsds5BeginReplicaRefresh
       nsds5BeginReplicaRefresh: start
