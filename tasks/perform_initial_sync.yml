@@ -19,7 +19,8 @@
   ansible.builtin.shell: >
     ldapmodify 
     -x 
-    -H {{ dirsrv_server_uri | regex_replace('localhost', dirsrv_initial_sync_source) }} 
+    {{ '-ZZ' if dirsrv_use_starttls else '' }}
+    -H {{ dirsrv_server_uri | regex_replace(ansible_hostname, dirsrv_initial_sync_source) }} 
     -D "{{ dirsrv_rootdn }}" 
     -w "{{ dirsrv_rootdn_password }}" 
     -f /tmp/dirsrv_initial_sync.ldif
@@ -38,8 +39,9 @@
 - name: Wait for initial sync to complete
   ansible.builtin.shell: >
     ldapsearch 
-    -x 
-    -H {{ dirsrv_server_uri | regex_replace('localhost', dirsrv_initial_sync_source) }} 
+    -x
+    {{ '-ZZ' if dirsrv_use_starttls else '' }}
+    -H {{ dirsrv_server_uri | regex_replace(ansible_hostname, dirsrv_initial_sync_source) }} 
     -D "{{ dirsrv_rootdn }}" 
     -w "{{ dirsrv_rootdn_password }}" 
     -b "cn=agreement_with_{{ ansible_facts['fqdn'] | replace('.', '_') }},cn=replica,cn=\"{{ dirsrv_suffix }}\",cn=mapping tree,cn=config" 
