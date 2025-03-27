@@ -3,7 +3,7 @@
   ansible.builtin.copy:
     dest: "/tmp/dirsrv_enable_replication.ldif"
     content: |
-      dn: cn={{ dirsrv_agreement_cn }},cn=replica,cn=\"{{ dirsrv_suffix }}\",cn=mapping tree,cn=config
+      dn: "cn={{ dirsrv_agreement_cn }},cn=replica,cn=\"{{ dirsrv_suffix }}\",cn=mapping tree,cn=config"
       changetype: modify
       replace: nsds5ReplicaEnabled
       nsds5ReplicaEnabled: on
