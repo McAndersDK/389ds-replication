@@ -45,3 +45,9 @@
 - name: Enable outbound replication after initial sync
   ansible.builtin.include_tasks: enable_outbound_replication.yml
   when: dirsrv_instance_is_supplier and dirsrv_initial_sync_source | length > 0 and dirsrv_enable_outbound_replication_after_sync
+
+- name: Restart service after replication agreement creation
+  ansible.builtin.include_tasks: restart_service.yml
+  when: 
+  - dirsrv_instance_is_supplier or dirsrv_instance_is_consumer
+  - dirsrv_initial_sync_source | length > 0 and dirsrv_enable_outbound_replication_after_sync
