@@ -7,7 +7,7 @@
   ansible.builtin.copy:
     dest: "/tmp/dirsrv_initial_sync.ldif"
     content: |
-      dn: cn=agreement_with_{{ ansible_fqdn | urlsplit('hostname') | replace('.', '_') }},cn=replica,cn="{{ dirsrv_suffix | replace('=','\=') | replace(',','\,') }}",cn=mapping tree,cn=config
+      dn: cn=agreement_with_{{ ansible_fqdn | urlsplit('hostname') | replace('.', '_') }},cn=replica,cn="{{ dirsrv_suffix }}",cn=mapping tree,cn=config
       changetype: modify
       add: nsds5BeginReplicaRefresh
       nsds5BeginReplicaRefresh: start
@@ -44,10 +44,10 @@
     -H {{ dirsrv_server_uri | regex_replace(ansible_fqdn, dirsrv_initial_sync_source) }} 
     -D "{{ dirsrv_rootdn }}" 
     -w "{{ dirsrv_rootdn_password }}" 
-    -b "cn=agreement_with_{{ ansible_fqdn | urlsplit('hostname') | replace('.', '_') }},cn=replica,cn=\"{{ dirsrv_suffix | replace('=','\=') | replace(',','\,') }}\",cn=mapping tree,cn=config"
+    -b "cn=agreement_with_{{ ansible_fqdn | urlsplit('hostname') | replace('.', '_') }},cn=replica,cn={{ dirsrv_suffix | replace('=','\=') | replace(',','\,') }},cn=mapping tree,cn=config"
     nsds5replicaUpdateInProgress | grep "nsds5replicaUpdateInProgress:" | awk '{print $2}'
   register: sync_status
-  until: sync_status.stdout.strip() == "0"
+  until: sync_status.stdout.strip() == "FALSE"
   retries: "{{ (dirsrv_initial_sync_timeout / 10) | int }}"
   delay: 10
   delegate_to: "{{ dirsrv_initial_sync_source }}"
