@@ -3,7 +3,7 @@
   ansible.builtin.copy:
     dest: "/tmp/dirsrv_enable_replication.ldif"
     content: |
-      dn: "cn=agreement_with_{{ ansible_facts['fqdn'] | urlsplit('hostname') | replace('.', '_') }},cn=replica,cn=\"{{ dirsrv_suffix }}\",cn=mapping tree,cn=config"
+      dn: cn=agreement_with_{{ ansible_fqdn | urlsplit('hostname') | replace('.', '_') }},cn=replica,cn="{{ dirsrv_suffix | replace('=','\=') | replace(',','\,') }}",cn=mapping tree,cn=config
       changetype: modify
       replace: nsds5ReplicaEnabled
       nsds5ReplicaEnabled: on
