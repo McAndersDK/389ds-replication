@@ -11,7 +11,7 @@
   when: dirsrv_perform_initial_sync and dirsrv_enable_outbound_replication_after_sync
 
 - name: Enable outbound replication after sync
-  ansible.builtin.shell: >
+  ansible.builtin.command: >
     ldapmodify
     -x
     {{ '-ZZ' if dirsrv_use_starttls else '' }}
@@ -20,6 +20,7 @@
     -w "{{ dirsrv_rootdn_password }}"
     -f /tmp/dirsrv_enable_replication.ldif
   register: enable_result
+  changed_when: enable_result.rc == 0
   failed_when: enable_result.rc != 0
   when: dirsrv_perform_initial_sync and dirsrv_enable_outbound_replication_after_sync
 

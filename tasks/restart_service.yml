@@ -1,10 +1,10 @@
 ---
-- name: restart local 389ds
+- name: Restart local 389ds
   ansible.builtin.service:
     name: dirsrv@{{ dirsrv_serverid }}
     state: restarted
 
-- name: restart remote consumer 389ds
+- name: Restart remote consumer 389ds
   ansible.builtin.service:
     name: dirsrv@{{ dirsrv_serverid }}
     state: restarted
