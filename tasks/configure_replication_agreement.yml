@@ -6,11 +6,11 @@
 
 - name: Determine if outbound replication should be enabled initially
   ansible.builtin.set_fact:
-    dirsrv_outbound_replication_enabled: "{{ 
-      'on' if 
-      (dirsrv_begin_replication_immediately and not dirsrv_initial_sync_source) or 
-      (not dirsrv_initial_sync_source) 
-      else 'off'
+    dirsrv_outbound_replication_enabled: "{{
+        'on' if
+        (dirsrv_begin_replication_immediately and not dirsrv_initial_sync_source) or
+        (not dirsrv_initial_sync_source)
+        else 'off'
       }}"
 
 - name: Set agreement name

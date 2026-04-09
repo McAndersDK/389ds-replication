@@ -12,12 +12,12 @@
 
 - name: Enable outbound replication after sync
   ansible.builtin.shell: >
-    ldapmodify 
+    ldapmodify
     -x
     {{ '-ZZ' if dirsrv_use_starttls else '' }}
-    -H {{ dirsrv_server_uri }} 
-    -D "{{ dirsrv_rootdn }}" 
-    -w "{{ dirsrv_rootdn_password }}" 
+    -H {{ dirsrv_server_uri }}
+    -D "{{ dirsrv_rootdn }}"
+    -w "{{ dirsrv_rootdn_password }}"
     -f /tmp/dirsrv_enable_replication.ldif
   register: enable_result
   failed_when: enable_result.rc != 0

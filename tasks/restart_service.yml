@@ -1,3 +1,4 @@
+---
 - name: restart local 389ds
   ansible.builtin.service:
     name: dirsrv@{{ dirsrv_serverid }}
@@ -7,4 +8,4 @@
   ansible.builtin.service:
     name: dirsrv@{{ dirsrv_serverid }}
     state: restarted
-  delegate_to: "{{ dirsrv_consumer_uri | urlsplit('hostname')  }}"
+  delegate_to: "{{ dirsrv_consumer_uri | urlsplit('hostname') }}"

@@ -17,18 +17,18 @@
 
 - name: Trigger initial sync from source server
   ansible.builtin.shell: >
-    ldapmodify 
-    -x 
+    ldapmodify
+    -x
     {{ '-ZZ' if dirsrv_use_starttls else '' }}
-    -H {{ dirsrv_server_uri | regex_replace(ansible_fqdn, dirsrv_initial_sync_source) }} 
-    -D "{{ dirsrv_rootdn }}" 
-    -w "{{ dirsrv_rootdn_password }}" 
+    -H {{ dirsrv_server_uri | regex_replace(ansible_fqdn, dirsrv_initial_sync_source) }}
+    -D "{{ dirsrv_rootdn }}"
+    -w "{{ dirsrv_rootdn_password }}"
     -f /tmp/dirsrv_initial_sync.ldif
   delegate_to: "{{ dirsrv_initial_sync_source }}"
   register: sync_result
   failed_when: sync_result.rc != 0 and "Replica is being initialized" not in sync_result.stderr
   when: dirsrv_perform_initial_sync
-  
+
 - name: Remove temporary LDIF file
   ansible.builtin.file:
     path: "/tmp/dirsrv_initial_sync.ldif"
@@ -38,12 +38,12 @@
 
 - name: Wait for initial sync to complete
   ansible.builtin.shell: >
-    ldapsearch 
+    ldapsearch
     -x
     {{ '-ZZ' if dirsrv_use_starttls else '' }}
-    -H {{ dirsrv_server_uri | regex_replace(ansible_fqdn, dirsrv_initial_sync_source) }} 
-    -D "{{ dirsrv_rootdn }}" 
-    -w "{{ dirsrv_rootdn_password }}" 
+    -H {{ dirsrv_server_uri | regex_replace(ansible_fqdn, dirsrv_initial_sync_source) }}
+    -D "{{ dirsrv_rootdn }}"
+    -w "{{ dirsrv_rootdn_password }}"
     -b "cn=agreement_with_{{ ansible_hostname + "_" + ansible_domain | replace('.', '_') }},cn=replica,cn={{ dirsrv_suffix | replace('=','\=') | replace(',','\,') }},cn=mapping tree,cn=config"
     nsds5replicaUpdateInProgress | grep "nsds5replicaUpdateInProgress:" | awk '{print $2}'
   register: sync_status

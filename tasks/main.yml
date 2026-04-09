@@ -48,6 +48,7 @@
 
 - name: Restart service after replication agreement creation
   ansible.builtin.include_tasks: restart_service.yml
-  when: 
-  - dirsrv_instance_is_supplier or dirsrv_instance_is_consumer
-  - dirsrv_initial_sync_source | length > 0 and dirsrv_enable_outbound_replication_after_sync
+  when:
+    - dirsrv_instance_is_supplier or dirsrv_instance_is_consumer
+    - dirsrv_initial_sync_source | length > 0 and dirsrv_enable_outbound_replication_after_sync
+
